@@ -1,0 +1,8 @@
+import os
+
+
+AMQP_URI = os.environ["AMQP_URI"]
+MONGO_URI = os.environ["MONGO_URI"]
+HASSOFFERS_NETWORK_TOKEN = ""
+HASSOFFERS_NETWORK_ID = ""
+MIN_APPROVAL_ID = 0

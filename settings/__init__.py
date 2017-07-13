@@ -1,7 +1,7 @@
 import os
 
 
-if os.environ["ENV_TYPE"] == "ci":
+if os.environ.get("ENV_TYPE") == "ci":
     from .ci import *  # NOQA
     print("Using CI settings")
 else:
