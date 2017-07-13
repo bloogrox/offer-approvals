@@ -1,4 +1,3 @@
-from nameko.rpc import rpc
 from nameko.events import event_handler
 
 from app import mongo_database
