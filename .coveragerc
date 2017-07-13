@@ -1,2 +1,2 @@
 [run]
-omit=venv/*,test/*,hasoffers/*,settings/*
+omit=venv/*,tests/*,hasoffers/*,settings/*

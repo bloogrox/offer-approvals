@@ -4,7 +4,7 @@ run:
 shell:
 	nameko shell
 
-pytest:
+test:
 	python -m pytest --cov=. --cov-config .coveragerc
 
 up:
