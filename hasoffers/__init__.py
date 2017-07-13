@@ -15,6 +15,8 @@ logger.addHandler(logging.StreamHandler(sys.stderr))
 
 class Error(Exception):
     pass
+
+
 class APIUsageExceededRateLimit(Error):
     pass
 
@@ -26,7 +28,9 @@ class Hasoffers(object):
     """
     Usage:
         client = Api(TOKEN, ID, debug=False, retry_count=1)
-        response = client.call(target='Conversion', method='findAll', params={'limit': 10, 'contain': ['Offer']})
+        response = client.call(target='Conversion',
+                               method='findAll',
+                               params={'limit': 10, 'contain': ['Offer']})
         response.extract_all()
 
     Short usage:
@@ -34,7 +38,8 @@ class Hasoffers(object):
         client.Conversion.findAll(limit=10, contain=['Offer']).extract_all()
 
     More examples:
-        offer = client.Offer.findById(id=1, contain=['Advertiser']).extract_one()
+        offer = (client.Offer.findById(id=1, contain=['Advertiser'])
+                 .extract_one())
 
         print(offer.name)
 
@@ -50,13 +55,16 @@ class Hasoffers(object):
             self.method = None
 
         def __call__(self, **kwargs):
-            return self.master.call(target=self.target, method=self.method, params=kwargs)
+            return self.master.call(target=self.target,
+                                    method=self.method,
+                                    params=kwargs)
 
         def __getattr__(self, method):
             self.method = method
             return self
 
-    def __init__(self, network_token, network_id, debug=False, retry_count=1, api_type='brand', proxies=None):
+    def __init__(self, network_token, network_id, debug=False, retry_count=1,
+                 api_type='brand', proxies=None):
         self.network_token = network_token
         self.network_id = network_id
 
@@ -129,7 +137,9 @@ class Hasoffers(object):
         http_response = requests.get(request.get_url(), proxies=self.proxies)
 
         complete_time = time.time() - start
-        self.log('Received %s in %.2fms: %s' % (http_response.status_code, complete_time * 1000, http_response.text))
+        self.log('Received %s in %.2fms: %s' % (http_response.status_code,
+                                                complete_time * 1000,
+                                                http_response.text))
 
         json_response = http_response.json(object_pairs_hook=OrderedDict)
 
@@ -142,7 +152,7 @@ class Hasoffers(object):
                 raise self.cast_error(json_response)
             except APIUsageExceededRateLimit:
                 if request.attempts < self.retry_count:
-                    self.log('Resending request: attempt %d!' % request.attempts)
+                    self.log(f'Resending request: attempt {request.attempts}!')
                     time.sleep(0.25)
                     return self.send_request(request)
                 else:
@@ -151,14 +161,19 @@ class Hasoffers(object):
         return Response(request, json_response)
 
     def cast_error(self, response_body):
-        if not 'response' in response_body or not 'status' in response_body['response']:
+        if ('response' not in response_body
+                or 'status' not in response_body['response']):
             return Error('Unexpected error: %r' % response_body)
-        if 'API usage exceeded rate limit' in response_body['response']['errorMessage']:
-            return APIUsageExceededRateLimit(response_body['response']['errorMessage'])
+        if ('API usage exceeded rate limit'
+                in response_body['response']['errorMessage']):
+            return APIUsageExceededRateLimit(
+                response_body['response']['errorMessage'])
         return Error(response_body['response']['errorMessage'])
 
     def log(self, *args, **kwargs):
-        """Proxy access to the hasoffers logger, changing the level based on the debug setting"""
+        """Proxy access to the hasoffers logger,
+        changing the level based on the debug setting
+        """
         logger.log(self.level, *args, **kwargs)
 
     def __getattr__(self, target):
@@ -204,7 +219,8 @@ class Response(object):
         if 'page' not in self.data:
             raise StopIteration
         else:
-            return RequestIterator(self.request, self.data['page'], self.data['pageCount'])
+            return RequestIterator(self.request, self.data['page'],
+                                   self.data['pageCount'])
 
     def extract_all(self, model_name=None):
         model_name = model_name or self.request.target
@@ -236,5 +252,3 @@ class RequestIterator(object):
             return self.request.master.send_request(self.request)
         else:
             raise StopIteration
-
-

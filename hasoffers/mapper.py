@@ -16,7 +16,9 @@ class Mapper(object):
         if not len(data):
             return None
 
-        relative_scopes = {model: scope for model, scope in data.items() if model != model_name}
+        relative_scopes = {model: scope
+                           for model, scope in data.items()
+                           if model != model_name}
         model_scope = data[model_name]
         model_scope.update(relative_scopes)
         model = Model(model_scope)
@@ -32,7 +34,9 @@ class Mapper(object):
         collection = []
 
         for object_id, object_scope in data.items():
-            relative_scopes = {model: scope for model, scope in object_scope.items() if model != model_name}
+            relative_scopes = {model: scope
+                               for model, scope in object_scope.items()
+                               if model != model_name}
             model_scope = object_scope[model_name]
             model_scope.update(relative_scopes)
 
