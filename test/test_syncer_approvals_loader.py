@@ -1,5 +1,4 @@
 import mock
-import services.syncer_approvals_loader
 from services.syncer_approvals_loader import SyncerApprovalsLoaderService
 
 from nameko.testing.services import worker_factory

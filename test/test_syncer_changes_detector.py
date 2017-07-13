@@ -1,5 +1,4 @@
 import mock
-import services.syncer_changes_detector
 from services.syncer_changes_detector import SyncerChangesDetectorService
 
 from nameko.testing.services import worker_factory
@@ -31,6 +30,7 @@ def test_dispatches_event_if_was_pending(*args):
 
 
 APPROVAL_APPROVED_FXT = {"id": 1, "approval_status": "approved"}
+
 
 @mock.patch("services.syncer_changes_detector.get_approval_by_id",
             return_value=APPROVAL_APPROVED_FXT)

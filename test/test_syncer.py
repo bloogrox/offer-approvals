@@ -1,5 +1,4 @@
 import mock
-import services.syncer
 from services.syncer import SyncerService
 
 from nameko.testing.services import worker_factory

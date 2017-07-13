@@ -14,7 +14,6 @@ def get_approvals(limit, page_number):
     ]
 
 
-
 class SyncerApprovalsLoaderService:
     name = "syncer_approvals_loader_service"
 
