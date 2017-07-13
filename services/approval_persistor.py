@@ -6,5 +6,5 @@ class ApprovalPersistorService:
 
     @rpc
     def persist(self):
-        # @todo create or replace object with a new one
+        # create or replace object with a new one
         pass
