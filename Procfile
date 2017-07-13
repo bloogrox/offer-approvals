@@ -1,1 +1,1 @@
-services: nameko run --config nameko.yml app
+start: bin/start.sh
