@@ -8,7 +8,8 @@ import settings
 
 def get_approvals_count():
     client = hasoffers.Hasoffers(settings.HASSOFFERS_NETWORK_TOKEN,
-                                 settings.HASSOFFERS_NETWORK_ID)
+                                 settings.HASSOFFERS_NETWORK_ID,
+                                 proxies=settings.PROXIES)
 
     resp = client.Offer.findAllAffiliateApprovals(
         filters={
