@@ -14,11 +14,12 @@ machine:
 dependencies:
   post:
     - pip install flake8
+    - pip install pytest-cov
 
 
 test:
   override:
-    - python -m pytest
+    - python -m pytest --cov=. --cov-config .coveragerc
     - flake8
 
 
