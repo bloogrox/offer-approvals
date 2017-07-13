@@ -28,7 +28,7 @@ class SyncerApprovalsLoaderService:
 
     @rpc
     def load_page(self, page_number):
-        approvals = get_approvals(10000, page_number)
+        approvals = get_approvals(settings.PAGE_SIZE, page_number)
         for approval in approvals:
             affiliate_offer = approval["AffiliateOffer"]
             (self.syncer_changes_detector_service.detect_changes
