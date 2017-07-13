@@ -1,0 +1,14 @@
+RabbitMQ:
+  image: "rabbitmq:3"
+  environment:
+    - RABBITMQ_DEFAULT_USER=guest
+    - RABBITMQ_DEFAULT_PASS=guest
+  ports:
+    - "5672:5672"
+
+MongoDB:
+  image: 'mvertes/alpine-mongo'
+  ports:
+    - "27017:27017"
+  volumes:
+    - ./volumes/mongodb:/data/db

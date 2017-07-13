@@ -1,0 +1,29 @@
+machine:
+  python:
+    version: 3.6.0
+
+  services:
+    - rabbitmq-server
+
+  environment:
+    ENV_TYPE: ci
+    MONGO_URI: mongodb://127.0.0.1:27017/db
+    AMQP_URI: "amqp://guest:guest@127.0.0.1/"
+
+
+dependencies:
+  post:
+    - pip install flake8
+
+
+test:
+  override:
+    - python -m pytest
+    - flake8
+
+
+deployment:
+  prod:
+    branch: master
+    heroku:
+      appname: pr-offer-approvals
