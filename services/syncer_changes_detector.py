@@ -1,10 +1,8 @@
 from nameko.rpc import rpc, RpcProxy
 from nameko.events import EventDispatcher
 
-
-def get_approval_by_id(id_):
-    # @todo find one approval in mongodb
-    return {"id": 1, "approval_status": "approved"}
+from app import mongo_database
+from db import get_approval_by_id
 
 
 class SyncerChangesDetectorService:
@@ -16,7 +14,7 @@ class SyncerChangesDetectorService:
 
     @rpc
     def detect_changes(self, approval):
-        db_approval = get_approval_by_id(approval["id"])
+        db_approval = get_approval_by_id(approval["id"], mongo_database)
 
         if not db_approval:
             is_approved = True
