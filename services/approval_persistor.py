@@ -1,12 +1,14 @@
 from nameko.rpc import rpc
+from nameko.events import event_handler
 
 from app import mongo_database
+from services.syncer_changes_detector import APPROVED_EVENT
 
 
 class ApprovalPersistorService:
     name = "approval_persistor_service"
 
-    @rpc
+    @event_handler("syncer_changes_detector_service", APPROVED_EVENT)
     def persist(self, approval):
         try:
             (mongo_database.approvals

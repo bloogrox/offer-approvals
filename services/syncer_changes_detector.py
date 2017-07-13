@@ -5,6 +5,9 @@ from app import mongo_database
 from db import get_approval_by_id
 
 
+APPROVED_EVENT = "approval.approved"
+
+
 class SyncerChangesDetectorService:
     name = "syncer_changes_detector_service"
 
@@ -24,6 +27,6 @@ class SyncerChangesDetectorService:
             is_approved = False
 
         if is_approved:
-            self.dispatch("approval.approved", approval)
+            self.dispatch(APPROVED_EVENT, approval)
             print("SyncerChangesDetectorService.detect_changes: "
                   f"approval approve detected {approval}")
