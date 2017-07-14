@@ -17,12 +17,19 @@ class EmailerService:
                         network_id=settings.HASOFFERS_NETWORK_ID,
                         proxies=settings.PROXIES)
 
-        affiliate_id = payload["AffiliateOffer"]["affiliate_id"]
-        offer_id = payload["AffiliateOffer"]["offer_id"]
-        offer_name = payload["Offer"]["name"]
-        payout = payload["Offer"]["default_payout"]
-        offer_description = payload["Offer"]["description"]
-        offer_cap = payload["Offer"]["conversion_cap"]
+        affiliate_id = payload["affiliate_id"]
+        offer_id = payload["offer_id"]
+
+        # get Offer with Thumbnail
+        resp = api.Offer.findById(id=offer_id, contain=["Thumbnail"])
+        thumbnail = (resp.data["Thumbnail"]["thumbnail"]
+                     if resp.data.get("Thumbnail")
+                     else None)
+
+        offer_name = resp.data["Offer"]["name"]
+        payout = resp.data["Offer"]["default_payout"]
+        offer_description = resp.data["Offer"]["description"]
+        offer_cap = resp.data["Offer"]["conversion_cap"]
 
         # get Affiliate Emails
         affiliate_users = (api.AffiliateUser
@@ -35,12 +42,6 @@ class EmailerService:
         params = dict(offer_id=offer_id, affiliate_id=affiliate_id)
         resp = api.Offer.generateTrackingLink(**params)
         tracking_link = resp.data["click_url"]
-
-        # get Thumbnail
-        resp = api.Offer.findById(id=offer_id, contain=["Thumbnail"])
-        thumbnail = (resp.data["Thumbnail"]["thumbnail"]
-                     if resp.data.get("Thumbnail")
-                     else None)
 
         # Send Email
         html = f"""
