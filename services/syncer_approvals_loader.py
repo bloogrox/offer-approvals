@@ -33,5 +33,5 @@ class SyncerApprovalsLoaderService:
             affiliate_offer = approval["AffiliateOffer"]
             (self.syncer_changes_detector_service.detect_changes
              .call_async(affiliate_offer))
-        print(f"SyncerApprovalsLoaderService.load_page: "
-              "processed page {page_number}")
+        print("SyncerApprovalsLoaderService.load_page: "
+              f"processed page {page_number}")
