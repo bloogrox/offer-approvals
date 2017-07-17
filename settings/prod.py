@@ -12,3 +12,5 @@ PROXIES = {
     'https': os.environ['PROXIMO_URL']
 }
 SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
+ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
+COMPANY_EMAIL = os.environ["COMPANY_EMAIL"]
