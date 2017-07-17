@@ -1,6 +1,8 @@
+from typing import List
 import sendgrid
 from sendgrid.helpers.mail import Email, Mail, Content, Personalization
 from hasoffers import Hasoffers
+from hasoffers.mapper import Model
 
 from nameko.events import event_handler
 
@@ -22,57 +24,98 @@ class EmailerService:
             affiliate_id = payload["affiliate_id"]
             offer_id = payload["offer_id"]
 
-            # get Offer with Thumbnail
-            resp = api.Offer.findById(id=offer_id, contain=["Thumbnail"])
-            thumbnail = (resp.data["Thumbnail"]["thumbnail"]
-                         if resp.data.get("Thumbnail")
-                         else None)
+            offer = get_offer(offer_id, api)
 
-            offer_name = resp.data["Offer"]["name"]
-            payout = resp.data["Offer"]["default_payout"]
-            offer_description = resp.data["Offer"]["description"]
-            offer_cap = resp.data["Offer"]["conversion_cap"]
+            tr_link = get_tracking_link(offer_id, affiliate_id, api)
 
-            # get Affiliate Emails
-            params = dict(fields=["email"],
-                          filters={"affiliate_id": affiliate_id})
-            affiliate_users = (api.AffiliateUser
-                               .findAll(params)
-                               .extract_all())
-            emails = [affiliate_user.email
-                      for affiliate_user in affiliate_users]
+            data = {
+                "thumbnail": (offer.Thumbnail["thumbnail"]
+                              if offer.Thumbnail
+                              else None),
+                "offer_id": offer.id,
+                "offer_name": offer.name,
+                "payout": offer.default_payout,
+                "offer_cap": offer.conversion_cap,
+                "tracking_link": tr_link,
+                "offer_description": offer.description
+            }
 
-            # get Tracking Link
-            params = dict(offer_id=offer_id, affiliate_id=affiliate_id)
-            resp = api.Offer.generateTrackingLink(**params)
-            tracking_link = resp.data["click_url"]
+            emails = get_affiliate_emails(affiliate_id, api)
 
-            # Send Email
-            html = f"""
-                <div>
-                    <img src="{thumbnail}">
-                </div>
-                <p>#{offer_id}: {offer_name}</p>
-                <p>Payout: {payout}</p>
-                <p>Offer Cap: {offer_cap}</p>
-                <p>Tracking link: {tracking_link}</p>
-                <p>Description: {offer_description}</p>
-            """
+            html = create_content(data)
 
-            mail = Mail()
-
-            mail.from_email = Email("info@performancerevenues.com")
-            mail.subject = ("You are approved for the offer "
-                            f"#{offer_id}: {offer_name}")
-            personalization = Personalization()
-            for email in emails:
-                personalization.add_to(Email(email))
-            mail.add_content(Content("text/html", html))
+            config = create_mail_config(
+                from_email="info@performancerevenues.com",
+                subject=f"You are approved for the offer #{offer.id}",
+                to_emails=emails,
+                content=html)
 
             sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
-            res = sg.client.mail.send.post(request_body=mail.get())
+
+            res = send(config, sg)
 
             print(f"EmailerService.send: sent email payload {payload} "
                   f"result {res}")
         except Exception as e:
             print(f"EmailerService.send: exception {e}")
+
+
+def get_offer(offer_id: int,
+              client: Hasoffers) -> Model:
+    return (client.Offer.findById(id=offer_id, contain=["Thumbnail"])
+            .extract_one())
+
+
+def get_tracking_link(offer_id: int,
+                      affiliate_id: int,
+                      client: Hasoffers) -> str:
+    params = dict(offer_id=offer_id, affiliate_id=affiliate_id)
+    resp = client.Offer.generateTrackingLink(**params)
+    return resp.data["click_url"]
+
+
+def get_affiliate_emails(affiliate_id: int, client: Hasoffers) -> List[str]:
+    params = dict(fields=["email"],
+                  filters={"affiliate_id": affiliate_id})
+    affiliate_users = (client.AffiliateUser
+                       .findAll(params)
+                       .extract_all())
+    emails = [affiliate_user.email
+              for affiliate_user in affiliate_users]
+    return emails
+
+
+def create_content(data: dict) -> str:
+    html = f"""
+        <div>
+            <img src="{data['thumbnail']}">
+        </div>
+        <p>#{data['offer_id']}: {data['offer_name']}</p>
+        <p>Payout: {data['payout']}</p>
+        <p>Offer Cap: {data['offer_cap']}</p>
+        <p>Tracking link: {data['tracking_link']}</p>
+        <p>Description: {data['offer_description']}</p>
+    """
+    return html
+
+
+def create_mail_config(from_email: str,
+                       subject: str,
+                       to_emails: List[str],
+                       content: str) -> dict:
+    mail = Mail()
+
+    mail.from_email = Email(from_email)
+    mail.subject = subject
+    personalization = Personalization()
+    for email in to_emails:
+        personalization.add_to(Email(email))
+    mail.add_personalization(personalization)
+    mail.add_content(Content("text/html", content))
+
+    return mail.get()
+
+
+def send(config: dict, client: sendgrid.SendGridAPIClient):
+    res = client.client.mail.send.post(request_body=config)
+    return res
