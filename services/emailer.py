@@ -37,6 +37,7 @@ class EmailerService:
                 "payout": offer.default_payout,
                 "offer_cap": offer.conversion_cap,
                 "offer_revenue_cap": offer.revenue_cap,
+                "preview_url": offer.preview_url,
                 "tracking_link": tr_link,
                 "offer_description": offer.description
             }
@@ -96,11 +97,18 @@ def create_content(data: dict) -> str:
 
     html = f"""
         <div>
-            <img src="{data['thumbnail']}">
+            <a href="{data['preview_url']}" target="_blank">
+                <img src="{data['thumbnail']}">
+            </a>
         </div>
         <p>#{data['offer_id']}: {data['offer_name']}</p>
         <p>Payout: {data['payout']}</p>
         <p>Offer Cap: {cap_value}</p>
+        <p>Preview:
+            <a href="{data['preview_url']}" target="_blank">
+                {data['preview_url']}
+            </a>
+        </p>
         <p>Tracking link: {data['tracking_link']}</p>
         <p>Description: {data['offer_description']}</p>
     """
