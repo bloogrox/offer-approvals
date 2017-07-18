@@ -36,6 +36,7 @@ class EmailerService:
                 "offer_name": offer.name,
                 "payout": offer.default_payout,
                 "offer_cap": offer.conversion_cap,
+                "offer_revenue_cap": offer.revenue_cap,
                 "tracking_link": tr_link,
                 "offer_description": offer.description
             }
@@ -86,13 +87,20 @@ def get_affiliate_emails(affiliate_id: int, client: Hasoffers) -> List[str]:
 
 
 def create_content(data: dict) -> str:
+    if data['offer_cap']:
+        cap_value = f"{data['offer_cap']} conversions"
+    elif data['offer_revenue_cap']:
+        cap_value = f"{data['offer_revenue_cap']} as revenue"
+    else:
+        cap_value = "open cap"
+
     html = f"""
         <div>
             <img src="{data['thumbnail']}">
         </div>
         <p>#{data['offer_id']}: {data['offer_name']}</p>
         <p>Payout: {data['payout']}</p>
-        <p>Offer Cap: {data['offer_cap']}</p>
+        <p>Offer Cap: {cap_value}</p>
         <p>Tracking link: {data['tracking_link']}</p>
         <p>Description: {data['offer_description']}</p>
     """
