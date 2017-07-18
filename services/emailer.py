@@ -78,7 +78,7 @@ def get_affiliate_emails(affiliate_id: int, client: Hasoffers) -> List[str]:
     params = dict(fields=["email"],
                   filters={"affiliate_id": affiliate_id})
     affiliate_users = (client.AffiliateUser
-                       .findAll(params)
+                       .findAll(**params)
                        .extract_all())
     emails = [affiliate_user.email
               for affiliate_user in affiliate_users]
