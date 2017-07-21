@@ -14,3 +14,7 @@ PROXIES = {
 SENDGRID_API_KEY = os.environ["SENDGRID_API_KEY"]
 ADMIN_EMAIL = os.environ["ADMIN_EMAIL"]
 COMPANY_EMAIL = os.environ["COMPANY_EMAIL"]
+UNSUBSCRIBED_AFFILIATES = [int(aff_id)
+                           for aff_id in (os
+                                          .environ['UNSUBSCRIBED_AFFILIATES']
+                                          .split(","))]

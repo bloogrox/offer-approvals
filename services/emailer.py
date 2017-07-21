@@ -24,6 +24,11 @@ class EmailerService:
             affiliate_id = payload["affiliate_id"]
             offer_id = payload["offer_id"]
 
+            # Check Affiliate is not in blacklist
+            if affiliate_id in settings.UNSUBSCRIBED_AFFILIATES:
+                print(f"Affiliate #{affiliate_id} is in blacklist, so return")
+                return
+
             offer = get_offer(offer_id, api)
 
             tr_link = get_tracking_link(offer_id, affiliate_id, api)
@@ -35,8 +40,8 @@ class EmailerService:
                 "offer_id": offer.id,
                 "offer_name": offer.name,
                 "payout": offer.default_payout,
-                "offer_cap": offer.conversion_cap,
-                "offer_revenue_cap": offer.revenue_cap,
+                "conversion_cap": offer.conversion_cap,
+                "revenue_cap": offer.revenue_cap,
                 "preview_url": offer.preview_url,
                 "tracking_link": tr_link,
                 "offer_description": offer.description
@@ -88,12 +93,12 @@ def get_affiliate_emails(affiliate_id: int, client: Hasoffers) -> List[str]:
 
 
 def create_content(data: dict) -> str:
-    if data['offer_cap']:
-        cap_value = f"{data['offer_cap']} conversions"
-    elif data['offer_revenue_cap']:
-        cap_value = f"{data['offer_revenue_cap']} as revenue"
+    if data['conversion_cap']:
+        cap_value = f"{data['conversion_cap']} conversions"
+    elif data['revenue_cap']:
+        cap_value = f"{data['revenue_cap']} as revenue"
     else:
-        cap_value = "open cap"
+        cap_value = "Ask your account manager"
 
     html = f"""
         <div>
