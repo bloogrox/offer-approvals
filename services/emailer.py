@@ -49,7 +49,7 @@ class EmailerService:
             config = create_mail_config(
                 from_email=settings.COMPANY_EMAIL,
                 subject=f"You are approved for the offer #{offer.id}",
-                to_emails=emails + [settings.ADMIN_EMAIL],
+                to_emails=emails,
                 content=html)
 
             sg = sendgrid.SendGridAPIClient(apikey=settings.SENDGRID_API_KEY)
