@@ -9,6 +9,7 @@ machine:
     ENV_TYPE: ci
     MONGO_URI: mongodb://127.0.0.1:27017/db
     AMQP_URI: "amqp://guest:guest@127.0.0.1/"
+    NETWORK_DOMAIN: "..."
 
 
 dependencies:
