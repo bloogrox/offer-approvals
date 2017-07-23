@@ -116,7 +116,7 @@ def create_content(data: dict) -> str:
         </p>
         <p>Tracking link: {data['tracking_link']}</p>
         <p>
-            <a href="http://{settings.DOMAIN}/offer_files/download_all/{data['offer_id']}" target="_blank">download
+            <a href="http://{settings.NETWORK_DOMAIN}/offer_files/download_all/{data['offer_id']}" target="_blank">download
             </a>
         </p>
         <p>Description: {data['offer_description']}</p>
