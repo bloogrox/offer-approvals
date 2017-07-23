@@ -39,9 +39,9 @@ class EmailerService:
                               else None),
                 "offer_id": offer.id,
                 "offer_name": offer.name,
-                "payout": float(offer.default_payout),
-                "conversion_cap": int(offer.conversion_cap),
-                "revenue_cap": float(offer.revenue_cap),
+                "payout": offer.default_payout,
+                "conversion_cap": offer.conversion_cap,
+                "revenue_cap": offer.revenue_cap,
                 "preview_url": offer.preview_url,
                 "tracking_link": tr_link,
                 "offer_description": offer.description
@@ -115,8 +115,8 @@ def create_content(data: dict) -> str:
             </a>
         </p>
         <p>Tracking link: {data['tracking_link']}</p>
-        <p><a 
-href="http://{settings.NETWORK_DOMAIN}/offer_files/all/{data['offer_id']}"
+        <p>
+<a href="http://{settings.NETWORK_DOMAIN}/files/all/{data['offer_id']}"
  target="_blank">download</a>
         </p>
         <p>Description: {data['offer_description']}</p>
