@@ -39,9 +39,9 @@ class EmailerService:
                               else None),
                 "offer_id": offer.id,
                 "offer_name": offer.name,
-                "payout": offer.default_payout,
-                "conversion_cap": offer.conversion_cap,
-                "revenue_cap": offer.revenue_cap,
+                "payout": float(offer.default_payout),
+                "conversion_cap": int(offer.conversion_cap),
+                "revenue_cap": float(offer.revenue_cap),
                 "preview_url": offer.preview_url,
                 "tracking_link": tr_link,
                 "offer_description": offer.description
