@@ -96,7 +96,7 @@ def create_content(data: dict) -> str:
     if data['conversion_cap']:
         cap_value = f"{data['conversion_cap']} conversions"
     elif data['revenue_cap']:
-        cap_value = f"{data['revenue_cap']} as revenue"
+        cap_value = f"${data['revenue_cap']}"
     else:
         cap_value = "Ask your account manager"
 
