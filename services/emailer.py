@@ -107,7 +107,7 @@ def create_content(data: dict) -> str:
             </a>
         </div>
         <p>#{data['offer_id']}: {data['offer_name']}</p>
-        <p>Payout: {data['payout']}</p>
+        <p>Payout: ${data['payout']}</p>
         <p>Offer Cap: {cap_value}</p>
         <p>Preview:
             <a href="{data['preview_url']}" target="_blank">
