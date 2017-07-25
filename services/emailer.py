@@ -2,6 +2,7 @@ from typing import List
 import sendgrid
 from sendgrid.helpers.mail import Email, Mail, Content, Personalization
 from hasoffers import Hasoffers
+from hasoffers import Error
 from hasoffers.mapper import Model
 
 from nameko.events import event_handler
@@ -47,7 +48,11 @@ class EmailerService:
                 "offer_description": offer.description
             }
 
+            affiliate = get_affiliate_by_id(affiliate_id, api)
+            employee = get_employee_by_id(affiliate.account_manager_id, api)
+
             emails = get_affiliate_emails(affiliate_id, api)
+            emails.append(employee.email)
 
             html = create_content(data)
 
@@ -90,6 +95,26 @@ def get_affiliate_emails(affiliate_id: int, client: Hasoffers) -> List[str]:
     emails = [affiliate_user.email
               for affiliate_user in affiliate_users]
     return emails
+
+
+def get_affiliate_by_id(affiliate_id: int, client: Hasoffers) -> Model:
+    """
+    @returns Affiliate object
+    """
+    try:
+        return client.Affiliate.findById(id=affiliate_id).extract_one()
+    except Error as e:
+        print(f"get_affiliate_by_id: exception {e}")
+
+
+def get_employee_by_id(employee_id: int, client: Hasoffers) -> Model:
+    """
+    @returns Employee object
+    """
+    try:
+        return client.Employee.findById(id=employee_id).extract_one()
+    except Error as e:
+        print(f"get_employee_by_id: exception {e}")
 
 
 def create_content(data: dict) -> str:
