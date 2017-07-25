@@ -34,18 +34,49 @@ class EmailerService:
 
             tr_link = get_tracking_link(offer_id, affiliate_id, api)
 
+            # Payout
+            payouts = get_offer_payouts(affiliate_id, api)
+            payouts_for_offer = list(filter(offer_pred(offer_id), payouts))
+
+            try:
+                payout = float(payouts_for_offer[0]["payout"])
+            except IndexError:
+                payout = 0.0
+
+            # Conversion Cap and Daily Revenue
+            caps = get_offer_convesion_caps(affiliate_id, api)
+            caps_for_offer = list(filter(offer_pred(offer_id), caps))
+
+            try:
+                conversion_cap = int(caps_for_offer[0]["conversion_cap"])
+                revenue_cap = float(caps_for_offer[0]["revenue_cap"])
+            except IndexError:
+                conversion_cap = 0
+                revenue_cap = 0.0
+
+            payout_value = (f"${payout}"
+                            if payout
+                            else "Ask your account manager")
+
+            if conversion_cap:
+                cap_value = f"{conversion_cap} conversions"
+            elif revenue_cap:
+                cap_value = f"${revenue_cap}"
+            else:
+                cap_value = "Ask your account manager"
+
             data = {
                 "thumbnail": (offer.Thumbnail["thumbnail"]
                               if offer.Thumbnail
                               else None),
                 "offer_id": offer.id,
                 "offer_name": offer.name,
-                "payout": float(offer.default_payout),
-                "conversion_cap": int(offer.conversion_cap),
-                "revenue_cap": float(offer.revenue_cap),
+                "payout_value": payout_value,
+                "cap_value": cap_value,
                 "preview_url": offer.preview_url,
                 "tracking_link": tr_link,
-                "offer_description": offer.description
+                "offer_description": offer.description,
+                "network_domain": settings.NETWORK_DOMAIN
             }
 
             affiliate = get_affiliate_by_id(affiliate_id, api)
@@ -70,6 +101,12 @@ class EmailerService:
                   f"result {res}")
         except Exception as e:
             print(f"EmailerService.send: exception {e}")
+
+
+def offer_pred(offer_id: int):
+    def f(d: dict) -> bool:
+        return d["offer_id"] == offer_id
+    return f
 
 
 def get_offer(offer_id: int,
@@ -117,14 +154,55 @@ def get_employee_by_id(employee_id: int, client: Hasoffers) -> Model:
         print(f"get_employee_by_id: exception {e}")
 
 
-def create_content(data: dict) -> str:
-    if data['conversion_cap']:
-        cap_value = f"{data['conversion_cap']} conversions"
-    elif data['revenue_cap']:
-        cap_value = f"${data['revenue_cap']}"
-    else:
-        cap_value = "Ask your account manager"
+def get_offer_payouts(affiliate_id: int, client: Hasoffers) -> list:
+    """
+    @returns
+        [
+            {
+                "id": ...,
+                "affiliate_id": ...,
+                "offer_id": ...,
+                "payout": ...
+            },
+            {
+                "id": ...,
+                "affiliate_id": ...,
+                "offer_id": ...,
+                "payout": ...
+            }
+        ]
+    """
+    try:
+        resp = client.Affiliate.getOfferPayouts(id=affiliate_id)
+        return [scope["OfferPayout"] for _, scope in resp.data.items()]
+    except Error as e:
+        print(f"get_offer_payouts: exception {e}")
 
+
+def get_offer_convesion_caps(affiliate_id: int, client: Hasoffers) -> list:
+    """
+    @returns
+        [
+            {
+                "id": "1",
+                "affiliate_id": "1",
+                "offer_id": "1",
+                "conversion_cap": "5",
+                "revenue_cap": "0.00",
+            },
+            ...
+        ]
+    """
+    try:
+        resp = client.Affiliate.getOfferConversionCaps(id=affiliate_id)
+        return [scope["OfferConversionCap"] for _, scope in resp.data.items()]
+    except Error as e:
+        print(f"get_offer_convesion_caps: exception {e}")
+
+
+def create_content(data: dict) -> str:
+    download_link = (f"http://{data['network_domain']}/files/all/"
+                     f"{data['offer_id']}")
     html = f"""
         <div>
             <a href="{data['preview_url']}" target="_blank">
@@ -132,8 +210,8 @@ def create_content(data: dict) -> str:
             </a>
         </div>
         <p>#{data['offer_id']}: {data['offer_name']}</p>
-        <p>Payout: ${data['payout']}</p>
-        <p>Offer Cap: {cap_value}</p>
+        <p>Payout: {data['payout_value']}</p>
+        <p>Offer Cap: {data['cap_value']}</p>
         <p>Preview:
             <a href="{data['preview_url']}" target="_blank">
                 {data['preview_url']}
@@ -141,8 +219,9 @@ def create_content(data: dict) -> str:
         </p>
         <p>Tracking link: {data['tracking_link']}</p>
         <p>
-<a href="http://{settings.NETWORK_DOMAIN}/files/all/{data['offer_id']}"
- target="_blank">Download creatives</a>
+            <a href="{download_link}" target="_blank">
+               Download creatives
+            </a>
         </p>
         <p>Description: {data['offer_description']}</p>
     """
