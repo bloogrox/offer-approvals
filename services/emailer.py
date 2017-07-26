@@ -26,7 +26,7 @@ class EmailerService:
             offer_id = payload["offer_id"]
 
             # Check Affiliate is not in blacklist
-            if affiliate_id in settings.UNSUBSCRIBED_AFFILIATES:
+            if int(affiliate_id) in settings.UNSUBSCRIBED_AFFILIATES:
                 print(f"Affiliate #{affiliate_id} is in blacklist, so return")
                 return
 
