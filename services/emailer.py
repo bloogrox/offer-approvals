@@ -174,7 +174,13 @@ def get_offer_payouts(affiliate_id: int, client: Hasoffers) -> list:
     """
     try:
         resp = client.Affiliate.getOfferPayouts(id=affiliate_id)
-        return [scope["OfferPayout"] for _, scope in resp.data.items()]
+        if resp.data:
+            # if result is not empty, then it is in dict
+            return [scope["OfferPayout"]
+                    for _, scope in resp.data.items()]
+        else:
+            # when no data, there is empty list
+            return []
     except Error as e:
         print(f"get_offer_payouts: exception {e}")
 
@@ -195,7 +201,11 @@ def get_offer_convesion_caps(affiliate_id: int, client: Hasoffers) -> list:
     """
     try:
         resp = client.Affiliate.getOfferConversionCaps(id=affiliate_id)
-        return [scope["OfferConversionCap"] for _, scope in resp.data.items()]
+        if resp.data:
+            return [scope["OfferConversionCap"]
+                    for _, scope in resp.data.items()]
+        else:
+            return []
     except Error as e:
         print(f"get_offer_convesion_caps: exception {e}")
 
