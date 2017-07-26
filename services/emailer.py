@@ -39,9 +39,11 @@ class EmailerService:
             payouts_for_offer = list(filter(offer_pred(offer_id), payouts))
 
             try:
+                # custom if exists
                 payout = float(payouts_for_offer[0]["payout"])
             except IndexError:
-                payout = 0.0
+                # otherwise get offer payout
+                payout = float(offer.default_payout)
 
             # Conversion Cap and Daily Revenue
             caps = get_offer_convesion_caps(affiliate_id, api)
@@ -54,9 +56,7 @@ class EmailerService:
                 conversion_cap = 0
                 revenue_cap = 0.0
 
-            payout_value = (f"${payout}"
-                            if payout
-                            else "Ask your account manager")
+            payout_value = f"${payout}"
 
             if conversion_cap:
                 cap_value = f"{conversion_cap} conversions"
