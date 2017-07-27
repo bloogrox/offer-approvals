@@ -211,8 +211,8 @@ def get_offer_convesion_caps(affiliate_id: int, client: Hasoffers) -> list:
 
 
 def create_content(data: dict) -> str:
-    download_link = (f"http://{data['network_domain']}/files/all/"
-                     f"{data['offer_id']}")
+    download_link = (f"http://{data['network_domain']}"
+                     f"/offer_files/download_all/{data['offer_id']}")
     html = f"""
         <div>
             <a href="{data['preview_url']}" target="_blank">
