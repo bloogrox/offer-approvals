@@ -34,20 +34,11 @@ class EmailerService:
 
             tr_link = get_tracking_link(offer_id, affiliate_id, api)
 
-            # Payout
-            payouts = get_offer_payouts(affiliate_id, api)
-            payouts_for_offer = list(filter(offer_pred(offer_id), payouts))
-
-            try:
-                # custom if exists
-                payout = float(payouts_for_offer[0]["payout"])
-            except IndexError:
-                # otherwise get offer payout
-                payout = float(offer.default_payout)
+            payout = find_payout(affiliate_id, offer, api)
 
             # Conversion Cap and Daily Revenue
             caps = get_offer_convesion_caps(affiliate_id, api)
-            caps_for_offer = list(filter(offer_pred(offer_id), caps))
+            caps_for_offer = list(filter(cmp_offer_id(offer_id), caps))
 
             try:
                 conversion_cap = int(caps_for_offer[0]["conversion_cap"])
@@ -103,7 +94,30 @@ class EmailerService:
             print(f"EmailerService.send: exception {e}")
 
 
-def offer_pred(offer_id: int):
+def find_payout(affiliate_id, offer, api):
+    # custom payout
+    payouts = get_offer_payouts(affiliate_id, api)
+    # offer payout
+    payouts_for_offer = list(filter(cmp_offer_id(offer.id), payouts))
+    # goal payout
+    goals = get_offer_goals(offer.id, api)
+    non_zero_goals = list(
+        filter(
+            lambda goal: bool(float(goal.default_payout)),
+            goals))
+    # choose payout
+    if payouts_for_offer and float(payouts_for_offer[0]["payout"]):
+        payout = float(payouts_for_offer[0]["payout"])
+    elif float(offer.default_payout):
+        payout = float(offer.default_payout)
+    elif non_zero_goals:
+        payout = float(non_zero_goals[0].default_payout)
+    else:
+        payout = 0.0
+    return payout
+
+
+def cmp_offer_id(offer_id: int):
     def f(d: dict) -> bool:
         return d["offer_id"] == offer_id
     return f
@@ -208,6 +222,26 @@ def get_offer_convesion_caps(affiliate_id: int, client: Hasoffers) -> list:
             return []
     except Error as e:
         print(f"get_offer_convesion_caps: exception {e}")
+
+
+def get_offer_goals(offer_id: int, client: Hasoffers) -> List[Model]:
+    """
+    @returns
+        [
+            {
+                "id": "1",
+                "offer_id": "1",
+                "default_payout": "1.00"
+            },
+            ...
+        ]
+    """
+    filters = dict(offer_id=offer_id)
+    fields = ["id", "offer_id", "default_payout"]
+    return (client
+            .Goal
+            .findAll(filters=filters, fields=fields)
+            .extract_all())
 
 
 def create_content(data: dict) -> str:
