@@ -139,7 +139,7 @@ def get_tracking_link(offer_id: int,
 
 def get_affiliate_emails(affiliate_id: int, client: Hasoffers) -> List[str]:
     params = dict(fields=["email"],
-                  filters={"affiliate_id": affiliate_id})
+                  filters={"affiliate_id": affiliate_id, "status": "active"})
     affiliate_users = (client.AffiliateUser
                        .findAll(**params)
                        .extract_all())
